@@ -1,45 +1,59 @@
 package Recursos;
 
 import Modelo.Libro;
-import Servicio.ServicioLibro;
+import Repositorio.RepositorioLibro;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.MediaType;
+import jakarta.transaction.Transactional;
+import jakarta.ws.rs.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Path("/biblioteca")
+@Transactional
 public class RecursoLibro {
 
-    private ServicioLibro servicio;
-
     @Inject
-    public RecursoLibro(ServicioLibro servicio) {
-        this.servicio = servicio;
-    }
+    private RepositorioLibro repo;
 
     @POST
-    @Produces(MediaType.APPLICATION_JSON)
     public Libro guardarLibro(Libro libro) {
-        servicio.nuevoLibro(libro);
+        repo.persist(libro);
         return libro;
     }
 
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
     public List<Libro> obtenerTodosLibros() {
-        return servicio.listarLibros();
+        return repo.listAll();
     }
 
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @Path("/obtenerLibro")
-    public Libro obtenerLibro(long idLibro) {
-        return servicio.getLibro(idLibro);
+    @Path("/{idLibro}")
+    public Libro obtenerLibro(@PathParam("idLibro") Long idLibro) {
+        var libroBuscado = repo.findById(idLibro);
+        if (libroBuscado != null) {
+            return libroBuscado;
+        }
+        throw new NoSuchElementException("El libro" + idLibro + "no esta en esta biblioteca.");
+    }
+
+    @PUT
+    @Path("/{idLibro}")
+    public Libro libroAModificar(@PathParam("idLibro") long idLibro, Libro libro) {
+        var libroBuscado = repo.findById(idLibro);
+        if (libroBuscado != null) {
+            libroBuscado.setTitle(libro.getTitle());
+            libroBuscado.setAuthor(libro.getAuthor());
+            libroBuscado.setGenre(libro.getGenre());
+            repo.persist(libroBuscado);
+            return libroBuscado;
+        }
+        throw new NoSuchElementException("El libro" + idLibro + "no esta en esta biblioteca.");
+    }
+
+    @DELETE
+    @Path("/{idLibro}")
+    public void eliminarLibro(@PathParam("idLibro") long idLibro) {
+        repo.deleteById(idLibro);
     }
 }
