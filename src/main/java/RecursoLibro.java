@@ -1,7 +1,3 @@
-package Recursos;
-
-import Modelo.Libro;
-import Repositorio.RepositorioLibro;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
@@ -16,8 +12,12 @@ public class RecursoLibro {
     @Inject
     private RepositorioLibro repo;
 
+    @Inject
+    private Validador validador;
+
     @POST
     public Libro guardarLibro(Libro libro) {
+        validador.validar(libro);
         repo.persist(libro);
         return libro;
     }
