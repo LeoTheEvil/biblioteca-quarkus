@@ -1,6 +1,7 @@
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.Response;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -12,12 +13,15 @@ public class RecursoLibro {
     @Inject
     private RepositorioLibro repo;
 
-    @Inject
-    private Validador validador;
+    private Validador validador = new Validador();
 
     @POST
     public Libro guardarLibro(Libro libro) {
-        validador.validar(libro);
+        try {
+            validador.validar(libro);
+        } catch (ParametroIncorrecto error) {
+            throw new WebApplicationException(Response.status(400).entity(error.getMessage()).build());
+        }
         repo.persist(libro);
         return libro;
     }
