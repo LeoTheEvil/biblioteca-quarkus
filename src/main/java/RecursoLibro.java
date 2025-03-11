@@ -6,6 +6,8 @@ import jakarta.ws.rs.core.Response;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import static org.hibernate.query.Page.page;
+
 @Path("/biblioteca")
 @Transactional
 public class RecursoLibro {
@@ -27,8 +29,10 @@ public class RecursoLibro {
     }
 
     @GET
-    public List<Libro> obtenerTodosLibros() {
-        return repo.listAll();
+    public List<Libro> obtenerTodosLibros(
+            @QueryParam("offset") @DefaultValue("0") int offset,
+            @QueryParam("size") @DefaultValue("0") int size) {
+        return repo.findAll().page(offset, size).list();
     }
 
     @GET
