@@ -1,7 +1,9 @@
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.jboss.resteasy.reactive.RestResponse;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -18,20 +20,20 @@ public class RecursoLibro {
     private Validador validador = new Validador();
 
     @POST
-    public Libro guardarLibro(Libro libro) {
+    public RestResponse<Libro> guardarLibro(Libro libro) {
         try {
             validador.validar(libro);
         } catch (ParametroIncorrecto error) {
             throw new WebApplicationException(Response.status(400).entity(error.getMessage()).build());
         }
         repo.persist(libro);
-        return libro;
+        return RestResponse.ResponseBuilder.ok(libro, MediaType.APPLICATION_JSON).build();
     }
 
     @GET
     public List<Libro> obtenerTodosLibros(
             @QueryParam("offset") @DefaultValue("0") int offset,
-            @QueryParam("size") @DefaultValue("0") int size) {
+            @QueryParam("size") @DefaultValue("1") int size) {
         return repo.findAll().page(offset, size).list();
     }
 

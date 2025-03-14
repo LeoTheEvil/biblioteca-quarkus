@@ -23,6 +23,12 @@ public class Libro {
         this.genre=genre;
     }
 
+    public long getId() {
+        return id;
+    }
+    public void setId() {
+        this.id=id;
+    }
     public String getTitle() {
         return title;
     }
