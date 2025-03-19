@@ -1,3 +1,4 @@
+import Modelo.Libro;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
@@ -7,8 +8,6 @@ import org.jboss.resteasy.reactive.RestResponse;
 
 import java.util.List;
 import java.util.NoSuchElementException;
-
-import static org.hibernate.query.Page.page;
 
 @Path("/biblioteca")
 @Transactional
@@ -20,17 +19,23 @@ public class RecursoLibro {
     private Validador validador = new Validador();
 
     @POST
+    @Consumes(MediaType.APPLICATION_JSON)
     public RestResponse<Libro> guardarLibro(Libro libro) {
         try {
             validador.validar(libro);
         } catch (ParametroIncorrecto error) {
             throw new WebApplicationException(Response.status(400).entity(error.getMessage()).build());
         }
-        repo.persist(libro);
+        try {
+            repo.persist(libro);
+        } catch (Exception e) {
+            throw new WebApplicationException("Error al guardar el libro", Response.Status.INTERNAL_SERVER_ERROR);
+        }
         return RestResponse.ResponseBuilder.ok(libro, MediaType.APPLICATION_JSON).build();
     }
 
     @GET
+    @Produces(MediaType.APPLICATION_JSON)
     public List<Libro> obtenerTodosLibros(
             @QueryParam("offset") @DefaultValue("0") int offset,
             @QueryParam("size") @DefaultValue("1") int size) {
@@ -39,6 +44,7 @@ public class RecursoLibro {
 
     @GET
     @Path("/{idLibro}")
+    @Produces(MediaType.APPLICATION_JSON)
     public Libro obtenerLibro(@PathParam("idLibro") Long idLibro) {
         var libroBuscado = repo.findById(idLibro);
         if (libroBuscado != null) {

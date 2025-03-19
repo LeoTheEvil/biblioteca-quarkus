@@ -1,3 +1,6 @@
+package Modelo;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -26,21 +29,25 @@ public class Libro {
     public long getId() {
         return id;
     }
-    public void setId() {
+    public void setId(long id) {
         this.id=id;
     }
+
+    @JsonProperty("title")
     public String getTitle() {
         return title;
     }
     public void setTitle(String title) {
         this.title=title;
     }
+    @JsonProperty("author")
     public String getAuthor() {
         return author;
     }
     public void setAuthor(String author) {
         this.author=author;
     }
+    @JsonProperty("genre")
     public String getGenre() {
         return genre;
     }

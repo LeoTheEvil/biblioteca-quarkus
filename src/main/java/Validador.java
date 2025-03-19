@@ -1,3 +1,5 @@
+import Modelo.Libro;
+
 public class Validador {
     public void validar(Libro libro) {
         if (libro.getTitle().isBlank()) {
