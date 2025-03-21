@@ -26,11 +26,7 @@ public class RecursoLibro {
         } catch (ParametroIncorrecto error) {
             throw new WebApplicationException(Response.status(400).entity(error.getMessage()).build());
         }
-        try {
-            repo.persist(libro);
-        } catch (Exception e) {
-            throw new WebApplicationException("Error al guardar el libro", Response.Status.INTERNAL_SERVER_ERROR);
-        }
+        repo.persist(libro);
         return RestResponse.ResponseBuilder.ok(libro, MediaType.APPLICATION_JSON).build();
     }
 
@@ -58,6 +54,7 @@ public class RecursoLibro {
     public Libro libroAModificar(@PathParam("idLibro") long idLibro, Libro libro) {
         var libroBuscado = repo.findById(idLibro);
         if (libroBuscado != null) {
+            libroBuscado.setId(libro.getId());
             libroBuscado.setTitle(libro.getTitle());
             libroBuscado.setAuthor(libro.getAuthor());
             libroBuscado.setGenre(libro.getGenre());

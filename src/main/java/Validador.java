@@ -2,6 +2,9 @@ import Modelo.Libro;
 
 public class Validador {
     public void validar(Libro libro) {
+        if (libro.getId() < 1) {
+            throw new ParametroIncorrecto("Identificador no valido");
+        }
         if (libro.getTitle().isBlank()) {
             throw new ParametroIncorrecto("El titulo no puede ser vacio.");
         }

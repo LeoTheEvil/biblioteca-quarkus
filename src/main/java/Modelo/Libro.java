@@ -9,7 +9,7 @@ import jakarta.persistence.Id;
 public class Libro {
 
     @Id
-    @GeneratedValue
+ //   @GeneratedValue
     private long id;
     private String title;
     private String author;
