@@ -84,15 +84,14 @@ public class RecursoLibro {
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public RestResponse<Prestamo> pedirLibro(Long idLibro, String nuevoPrestatario) {
-        Prestamo prestamo = new Prestamo(idLibro, nuevoPrestatario);
+    public RestResponse<Prestamo> pedirLibro(Prestamo prestamo) {
         try {
             validador.validarP(prestamo);
         } catch (ParametroIncorrecto error) {
             throw new WebApplicationException(Response.status(400).entity(error.getMessage()).build());
         }
         if (libroPrestado(prestamo)) {
-            listaPrestatarios.add(nuevoPrestatario);
+            listaPrestatarios.add(prestamo.getPrestatario());
         } else {
             repoP.persist(prestamo);
         }
