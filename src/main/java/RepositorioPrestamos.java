@@ -1,8 +1,8 @@
-import Modelo.Libro;
+import Modelo.Prestamo;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
-public class RepositorioLibro implements PanacheRepository<Libro> {
+public class RepositorioPrestamos implements PanacheRepository<Prestamo> {
 
 }

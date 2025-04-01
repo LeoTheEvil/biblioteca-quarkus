@@ -1,12 +1,13 @@
+package Modelo;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 
 @Entity
 public class Libro {
 
     @Id
-    @GeneratedValue
     private long id;
     private String title;
     private String author;
@@ -23,18 +24,28 @@ public class Libro {
         this.genre=genre;
     }
 
+    public long getId() {
+        return id;
+    }
+    public void setId(long id) {
+        this.id=id;
+    }
+
+    @JsonProperty("title")
     public String getTitle() {
         return title;
     }
     public void setTitle(String title) {
         this.title=title;
     }
+    @JsonProperty("author")
     public String getAuthor() {
         return author;
     }
     public void setAuthor(String author) {
         this.author=author;
     }
+    @JsonProperty("genre")
     public String getGenre() {
         return genre;
     }
