@@ -90,7 +90,7 @@ public class RecursoLibro {
         } catch (ParametroIncorrecto error) {
             throw new WebApplicationException(Response.status(400).entity(error.getMessage()).build());
         }
-        if (libroPrestado(prestamo)) {
+        if (libroPrestado(prestamo.getId())) {
             listaPrestatarios.add(prestamo.getPrestatario());
         } else {
             repoP.persist(prestamo);
@@ -99,14 +99,14 @@ public class RecursoLibro {
     }
 
     @GET
-    @Path("/{prestamo}")
-    public boolean libroPrestado(@PathParam("prestamo") Prestamo prestamo) {
-        var libroBuscado = repoP.findById(prestamo.getId());
+    @Path("/{idLibro}")
+    public boolean libroPrestado(@PathParam("idLibro") long idLibro) {
+        var libroBuscado = repoP.findById(idLibro);
         if (libroBuscado != null) {
-            print("El libro " + prestamo.getId() + " ya esta prestado a " + prestamo.getPrestatario());
+            print("El libro " + idLibro + " ya esta prestado a " + librosPrestados.get(idLibro));
             return true;
         }
-        print("El libro " + prestamo.getId() + "esta disponible");
+        print("El libro " + idLibro + "esta disponible");
         return false;
     }
 
