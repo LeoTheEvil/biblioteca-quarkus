@@ -83,6 +83,7 @@ public class RecursoLibro {
     }
 
     @POST
+    @Path("/prestamos")
     @Consumes(MediaType.APPLICATION_JSON)
     public RestResponse<Prestamo> pedirLibro(Prestamo prestamo) {
         try {
