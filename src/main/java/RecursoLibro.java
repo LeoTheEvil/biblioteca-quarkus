@@ -58,7 +58,7 @@ public class RecursoLibro {
         if (libroBuscado != null) {
             return libroBuscado;
         }
-        throw new NoSuchElementException("El libro" + idLibro + "no esta en esta biblioteca.");
+        throw new WebApplicationException(Response.status(404).entity("El libro " + idLibro + " no esta en esta biblioteca.").build());
     }
 
     @PUT
@@ -73,13 +73,19 @@ public class RecursoLibro {
             repo.persist(libroBuscado);
             return libroBuscado;
         }
-        throw new NoSuchElementException("El libro" + idLibro + "no esta en esta biblioteca.");
+        throw new WebApplicationException(Response.status(404).entity("El libro " + idLibro + " no esta en esta biblioteca.").build());
     }
 
     @DELETE
     @Path("/{idLibro}")
-    public void eliminarLibro(@PathParam("idLibro") long idLibro) {
-        repo.deleteById(idLibro);
+    @Produces("plain/text")
+    public RestResponse<String> eliminarLibro(@PathParam("idLibro") long idLibro) {
+        if (repo.deleteById(idLibro)) {
+            repoP.deleteById(idLibro);
+            return RestResponse.ResponseBuilder.ok("El libro " + idLibro + " ha sido eliminado.").build();
+        } else {
+            throw new WebApplicationException(Response.status(404).entity("El libro " + idLibro + " no esta en esta biblioteca.").build());
+        }
     }
 
     @POST
@@ -91,24 +97,22 @@ public class RecursoLibro {
         } catch (ParametroIncorrecto error) {
             throw new WebApplicationException(Response.status(400).entity(error.getMessage()).build());
         }
+        String mensaje = "El libro " + prestamo.getId() + " ya esta prestado a " + repoP.findById(prestamo.getId());
         if (libroPrestado(prestamo.getId())) {
             listaPrestatarios.add(prestamo.getPrestatario());
+            throw new WebApplicationException(Response.status(409).entity(mensaje).build());
         } else {
             repoP.persist(prestamo);
+            return RestResponse.ResponseBuilder.ok(prestamo, MediaType.APPLICATION_JSON).build();
         }
-        return RestResponse.ResponseBuilder.ok(prestamo, MediaType.APPLICATION_JSON).build();
+
     }
 
     @GET
-    @Path("/{idLibro}")
+    @Path("/prestamos/{idLibro}")
     public boolean libroPrestado(@PathParam("idLibro") long idLibro) {
         var libroBuscado = repoP.findById(idLibro);
-        if (libroBuscado != null) {
-            print("El libro " + idLibro + " ya esta prestado a " + librosPrestados.get(idLibro));
-            return true;
-        }
-        print("El libro " + idLibro + "esta disponible");
-        return false;
+        if (libroBuscado != null) {return true;} else {return false;}
     }
 
     @DELETE
