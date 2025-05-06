@@ -10,23 +10,16 @@ import org.jboss.resteasy.reactive.RestResponse;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.NoSuchElementException;
-
-import static org.locationtech.jts.util.Debug.print;
 
 @Path("/biblioteca")
 @Transactional
 public class RecursoLibro {
-
     @Inject
     private RepositorioLibro repo;
-
     @Inject
     private RepositorioPrestamos repoP;
 
     HashMap<Long, List<String>> librosPrestados = new HashMap<Long, List<String>>();
-    List<String> listaPrestatarios = new ArrayList<String>();
-
     private Validador validador = new Validador();
 
     @POST
@@ -38,6 +31,7 @@ public class RecursoLibro {
             throw new WebApplicationException(Response.status(400).entity(error.getMessage()).build());
         }
         repo.persist(libro);
+        List<String> listaPrestatarios = new ArrayList<String>();
         librosPrestados.put(libro.getId(), listaPrestatarios);
         return RestResponse.ResponseBuilder.ok(libro, MediaType.APPLICATION_JSON).build();
     }
@@ -82,6 +76,7 @@ public class RecursoLibro {
     public RestResponse<String> eliminarLibro(@PathParam("idLibro") long idLibro) {
         if (repo.deleteById(idLibro)) {
             repoP.deleteById(idLibro);
+            librosPrestados.remove(idLibro);
             return RestResponse.ResponseBuilder.ok("El libro " + idLibro + " ha sido eliminado.").build();
         } else {
             throw new WebApplicationException(Response.status(404).entity("El libro " + idLibro + " no esta en esta biblioteca.").build());
@@ -97,15 +92,23 @@ public class RecursoLibro {
         } catch (ParametroIncorrecto error) {
             throw new WebApplicationException(Response.status(400).entity(error.getMessage()).build());
         }
-        String mensaje = "El libro " + prestamo.getId() + " ya esta prestado a " + repoP.findById(prestamo.getId());
-        if (libroPrestado(prestamo.getId())) {
-            listaPrestatarios.add(prestamo.getPrestatario());
-            throw new WebApplicationException(Response.status(409).entity(mensaje).build());
+        var libroBuscado = repo.findById(prestamo.getId());
+        if (libroBuscado != null) {
+            List<String> listaPrestatarios = librosPrestados.get(prestamo.getId());
+            String mensaje = null;
+            if (listaPrestatarios != null && !listaPrestatarios.isEmpty()) {
+                mensaje = "El libro " + prestamo.getId() + " ya esta prestado a " + listaPrestatarios.get(0);
+            }
+            if (libroPrestado(prestamo.getId())) {
+                listaPrestatarios.add(prestamo.getPrestatario());
+                throw new WebApplicationException(Response.status(409).entity(mensaje).build());
+            } else {
+                repoP.persist(prestamo);
+                return RestResponse.ResponseBuilder.ok(prestamo, MediaType.APPLICATION_JSON).build();
+            }
         } else {
-            repoP.persist(prestamo);
-            return RestResponse.ResponseBuilder.ok(prestamo, MediaType.APPLICATION_JSON).build();
+            throw new WebApplicationException(Response.status(404).entity("El libro " + prestamo.getId() + " no esta en esta biblioteca.").build());
         }
-
     }
 
     @GET
@@ -116,18 +119,24 @@ public class RecursoLibro {
     }
 
     @DELETE
-    @Path("/{idPrestamo}")
+    @Path("/prestamos/{idPrestamo}")
     public void devolverLibro(@PathParam("idPrestamo") long idLibro) {
+        List<String> listaPrestatarios = librosPrestados.get(idLibro);
         boolean encontrado = false;
         for (long i : librosPrestados.keySet()) {
             if (i == idLibro) {
                 encontrado = true;
+                break;
             }
         }
         if (encontrado) {
-            repoP.deleteById(idLibro);
+            if (listaPrestatarios.isEmpty()) {
+                librosPrestados.remove(idLibro);
+            } else {
+                listaPrestatarios.remove(0);
+            }
         } else {
-            librosPrestados.remove(idLibro);
+            repoP.deleteById(idLibro);
         }
     }
 }
