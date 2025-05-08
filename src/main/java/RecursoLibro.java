@@ -95,12 +95,9 @@ public class RecursoLibro {
         var libroBuscado = repo.findById(prestamo.getId());
         if (libroBuscado != null) {
             List<String> listaPrestatarios = librosPrestados.get(prestamo.getId());
-            String mensaje = null;
-            if (listaPrestatarios != null && !listaPrestatarios.isEmpty()) {
-                mensaje = "El libro " + prestamo.getId() + " ya esta prestado a " + listaPrestatarios.get(0);
-            }
+            listaPrestatarios.add(prestamo.getPrestatario());
+            String mensaje = "El libro " + prestamo.getId() + " ya esta prestado a " + listaPrestatarios.get(0);
             if (libroPrestado(prestamo.getId())) {
-                listaPrestatarios.add(prestamo.getPrestatario());
                 throw new WebApplicationException(Response.status(409).entity(mensaje).build());
             } else {
                 repoP.persist(prestamo);
